@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Magazzino Avanzata</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assets/styles/main.css">
+    
+    <style>
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #3498db;
+        }
+        #app-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <h2><i class="fas fa-spinner fa-spin"></i> Caricamento in corso...</h2>
+        <p>Verifica dei file in corso</p>
+    </div>
+
+    <div class="container" id="app-content">
+        <header>
+    <div class="header-content">
+        <div class="header-left">
+            <button class="btn btn-success" id="add-warehouse-btn">
+                <i class="fas fa-plus"></i> Nuovo Magazzino
+            </button>
+        </div>
+        
+        <div class="header-center">
+            <h1><i class="fas fa-warehouse"></i> Gestione Magazzino</h1>
+        </div>
+        
+        <div class="header-right">
+            <button class="btn btn-warning" id="sync-btn">
+                <i class="fas fa-sync-alt"></i> Sincronizza
+            </button>
+            <button id="theme-toggle" class="btn btn-sm theme-toggle-btn">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </div>
+    </div>
+</header>
+        
+        <div class="tabs" id="warehouse-tabs">
+            <!-- Tabs verranno generati dinamicamente -->
+        </div>
+        
+        <!-- Contenuto Magazzino -->
+        <div class="tab-content active" id="warehouse-content">
+            <div class="card">
+                
+<div class="card-header">
+    <div class="header-title-section">
+        <h2><i class="fas fa-edit"></i> Inventario Magazzino:</h2>
+        <div class="warehouse-name-section">
+            <span id="current-warehouse-name">Magazzino 1</span>
+            <button class="btn btn-warning btn-sm" id="rename-btn">
+                <i class="fas fa-edit"></i> Rinomina
+            </button>
+        </div>
+    </div>
+</div>
+                
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Cerca articoli...">
+                    <div class="filter-buttons">
+                        <button class="btn btn-sm" id="filter-all">Tutti</button>
+                        <button class="btn btn-sm btn-warning" id="filter-low">Esaurimento</button>
+                    </div>
+                </div>
+                
+                <div id="category-sections">
+                    <!-- Categorie verranno generate dinamicamente -->
+                </div>
+                
+                <button class="btn btn-primary add-item-btn" id="add-category-btn">
+                    <i class="fas fa-plus"></i> Aggiungi Categoria
+                </button>
+                
+                <div class="warehouse-summary">
+                    <h2><i class="fas fa-chart-pie"></i> Riepilogo Magazzino</h2>
+                    <div class="summary-item">
+                        <span><i class="fas fa-boxes"></i> Totale Articoli:</span>
+                        <span class="summary-value" id="total-items">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span><i class="fas fa-exclamation-triangle"></i> Articoli in Esaurimento:</span>
+                        <span class="summary-value negative" id="low-stock">0</span>
+                    </div>
+                </div>
+                
+                <div class="card history-card">
+                    <div class="card-header" id="history-header">
+                        <h2><i class="fas fa-history"></i> Storico Modifiche</h2>
+                        <i class="fas fa-chevron-down" id="history-chevron"></i>
+                    </div>
+                    <div class="card-body" id="history-content">
+                        <ul id="history-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenuto Panoramica -->
+        <div class="tab-content" id="summary-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clipboard-list"></i> Panoramica Magazzini</h2>
+                </div>
+                <div class="summary-grid" id="warehouse-summary"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Gestione Magazzino | Strumento sviluppato per la gestione avanzata degli inventari</p>
+            <p>Dati salvati localmente nel tuo browser</p>
+        </footer>
+    </div>
+
+    <!-- Modal Sincronizzazione - VERSIONE MIGLIORATA CON CSV -->
+<div class="sync-modal" id="sync-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-sync-alt"></i> Sincronizza Dati</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        
+        <div class="sync-options">
+            <!-- Sezione Esporta Dati -->
+            <div class="sync-option">
+                <h3><i class="fas fa-upload"></i> Esporta Dati</h3>
+                <p>Esporta tutti i dati del magazzino in diversi formati.</p>
+                
+                <div class="export-stats" id="export-stats" style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px;">
+                    <!-- Le statistiche verranno caricate qui -->
+                </div>
+                
+                <textarea id="export-data" readonly placeholder="Dati esportati appariranno qui..."></textarea>
+                
+                <div class="sync-buttons">
+                    <button class="btn btn-primary" id="copy-btn">
+                        <i class="fas fa-copy"></i> Copia JSON
+                    </button>
+                    <button class="btn btn-success" id="download-btn">
+                        <i class="fas fa-download"></i> Scarica JSON
+                    </button>
+                    <button class="btn btn-info" id="download-csv-btn">
+                        <i class="fas fa-file-csv"></i> Esporta CSV
+                    </button>
+                </div>
+                
+                <div class="csv-preview" id="csv-preview" style="background: #e8f5e8; padding: 8px; border-radius: 4px; margin-top: 10px; font-size: 12px; display: none;">
+                    <!-- Anteprima CSV -->
+                </div>
+            </div>
+            
+            <!-- Sezione Importa Dati -->
+            <div class="sync-option">
+                <h3><i class="fas fa-download"></i> Importa Dati</h3>
+                <p>Importa dati da file JSON/CSV o incolla i dati per sincronizzare.</p>
+                
+                <textarea id="import-data" placeholder="Incolla qui i dati JSON/CSV o carica un file..."></textarea>
+                <input type="file" id="import-file" accept=".json,.csv" style="display: none;">
+                
+                <div class="sync-buttons">
+                    <button class="btn btn-warning" id="upload-btn">
+                        <i class="fas fa-upload"></i> Carica File
+                    </button>
+                    <button class="btn btn-primary" id="import-btn">
+                        <i class="fas fa-paste"></i> Importa
+                    </button>
+                </div>
+                
+                <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                    <strong>Formati supportati:</strong><br>
+                    • JSON (completo)<br>
+                    • CSV (Magazzino;Categoria;Articolo;Quantità;Soglia)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- Notifiche -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Pulsante Scroll To Top -->
+    <div class="floating-btn" id="scroll-top-btn">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+   <!-- CORREGGI L'ORDINE DEGLI SCRIPT -->
+<script src="./src/utils/constants.js"></script>
+<script src="./src/utils/helpers.js"></script>
+<script src="./src/utils/notifications.js"></script>
+<script src="./src/modules/database.js"></script>
+<script src="./src/modules/theme-manager.js"></script>
+<script src="./src/modules/history-manager.js"></script>
+<script src="./src/modules/sync-manager.js"></script>
+<script src="./src/modules/inventory-manager.js"></script>
+<script src="./src/modules/ui-manager.js"></script>
+<script src="./src/app.js"></script>
+
+    <!-- Script di inizializzazione -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM caricato, verificando file...');
+            
+            // Nascondi loading e mostra app dopo un breve ritardo
+            setTimeout(function() {
+                const loading = document.getElementById('loading');
+                const appContent = document.getElementById('app-content');
+                
+                if (loading && appContent) {
+                    loading.style.display = 'none';
+                    appContent.style.display = 'block';
+                    console.log('Applicazione caricata correttamente');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
